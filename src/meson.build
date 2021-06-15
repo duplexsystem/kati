@@ -52,9 +52,12 @@ kati_lib = static_library('kati',
 kati_exe = executable('kati', ['main.cc'],
     link_with: [kati_lib],
     dependencies: [thread_dep, rt_dep],
+    cpp_args: kati_cppdefs,
     install: true
 )
 
 foreach t: kati_test
-    kt = executable(t, [t + '.cc'], link_with: [kati_lib], install: false)
+    kt = executable(t, [t + '.cc'],
+        link_with: [kati_lib], cpp_args: kati_cppdefs, install: false
+    )
 endforeach
