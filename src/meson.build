@@ -1,6 +1,6 @@
 kati_cppdefs = []
 
-if not get_option('nolog')
+if get_option('nolog')
     kati_cppdefs += '-DNOLOG'
 endif
 
