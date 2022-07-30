@@ -653,6 +653,16 @@ void Evaluator::EvalInclude(const IncludeStmt* stmt) {
   for (StringPiece pat : WordScanner(pats)) {
     ScopedTerminator st(pat);
     auto files = Glob(pat.data());
+    
+    if (files->size() == 0) {
+      for (auto inc_path : g_flags.include_dirs) {
+        auto to_check = (inc_path + '/' + pat.data());
+        LOG("searching for %s in : %s", pat.data(), inc_path.c_str());
+        Glob(to_check.c_str(), &files);
+        if (files->size() > 0)
+          break;
+      }
+    }
 
     if (files.empty()) {
       // Glob matched no files so use it as a literal name.
