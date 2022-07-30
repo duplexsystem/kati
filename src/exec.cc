@@ -62,7 +62,7 @@ class Executor {
         ce_.evaluator()->Enter(FrameType::EXEC, n.output.c_str(), n.loc));
 
     done_[n.output] = kProcessing;
-    double output_ts = n->GetTimestamp(ce_.evaluator(), n.output);
+    double output_ts = n.GetTimestamp(ce_.evaluator(), n.output);
 
     LOG("ExecNode: %s for %s", n.output.c_str(),
         needed_by ? needed_by : "(null)");

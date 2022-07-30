@@ -654,12 +654,12 @@ void Evaluator::EvalInclude(const IncludeStmt* stmt) {
     ScopedTerminator st(pat);
     auto files = Glob(pat.data());
     
-    if (files->size() == 0) {
+    if (files.size() == 0) {
       for (auto inc_path : g_flags.include_dirs) {
         auto to_check = (inc_path + '/' + pat.data());
         LOG("searching for %s in : %s", pat.data(), inc_path.c_str());
-        Glob(to_check.c_str(), &files);
-        if (files->size() > 0)
+        files = Glob(to_check.c_str());
+        if (files.size() > 0)
           break;
       }
     }

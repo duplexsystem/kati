@@ -27,7 +27,6 @@ kati_src = [
     'stringprintf.cc',
     'strutil.cc',
     'symtab.cc',
-    'thread_pool.cc',
     'timeutil.cc',
     'var.cc',
 ]
