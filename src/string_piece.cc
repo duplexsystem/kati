@@ -36,9 +36,9 @@ bool operator==(const StringPiece& x, const StringPiece& y) {
   size_t len = x.size();
   if (len >= sizeof(uint64_t)) {
     len -= sizeof(uint64_t);
-    uint64_t xt = *reinterpret_cast<const uint64_t*>(x.data() + len);
-    uint64_t yt = *reinterpret_cast<const uint64_t*>(y.data() + len);
-    if (xt != yt)
+    const char* xptr = reinterpret_cast<const char*>(x.data() + len);
+    const char* yptr = reinterpret_cast<const char*>(y.data() + len);
+    if (StringPiece::wordmemcmp(xptr, yptr, 8))
       return false;
   }
   return StringPiece::wordmemcmp(x.data(), y.data(), len) == 0;
