@@ -50,9 +50,6 @@ KATI_CXX_SRCS := \
 	timeutil.cc \
 	var.cc
 
-KATI_CXX_GENERATED_SRCS := \
-	version.cc
-
 KATI_CXX_SRCS := $(addprefix $(KATI_SRC_PATH)/,$(KATI_CXX_SRCS))
 KATI_CXX_TEST_SRCS := \
   $(wildcard $(KATI_SRC_PATH)/*_test.cc) \
@@ -61,8 +58,6 @@ KATI_CXX_TEST_SRCS := \
 
 KATI_CXX_OBJS := $(patsubst $(KATI_SRC_PATH)/%.cc,$(KATI_INTERMEDIATES_PATH)/%.o,\
 	$(KATI_CXX_SRCS))
-KATI_CXX_GENERATED_OBJS := $(patsubst %.cc,$(KATI_INTERMEDIATES_PATH)/%.o,\
-	$(KATI_CXX_GENERATED_SRCS))
 KATI_CXX_TEST_OBJS := $(patsubst $(KATI_SRC_PATH)/%.cc,$(KATI_INTERMEDIATES_PATH)/%.o,\
 	$(KATI_CXX_TEST_SRCS))
 
@@ -78,7 +73,7 @@ endif
 KATI_LIBS += $(LDFLAGS)
 
 # Rule to build ckati into KATI_BIN_PATH
-$(KATI_BIN_PATH)/ckati: $(KATI_CXX_OBJS) $(KATI_CXX_GENERATED_OBJS)
+$(KATI_BIN_PATH)/ckati: $(KATI_CXX_OBJS)
 	@mkdir -p $(dir $@)
 	$(KATI_LD) -std=c++17 $(KATI_CXXFLAGS) -o $@ $^ $(KATI_LIBS)
 
@@ -87,34 +82,12 @@ $(KATI_CXX_OBJS) $(KATI_CXX_TEST_OBJS): $(KATI_INTERMEDIATES_PATH)/%.o: $(KATI_S
 	@mkdir -p $(dir $@)
 	$(KATI_CXX) -c -std=c++17 $(KATI_CXXFLAGS) -o $@ $<
 
-# Rule to build generated source files into object files in KATI_INTERMEDIATES_PATH
-$(KATI_CXX_GENERATED_OBJS): $(KATI_INTERMEDIATES_PATH)/%.o: $(KATI_INTERMEDIATES_PATH)/%.cc
-	@mkdir -p $(dir $@)
-	$(KATI_CXX) -c -std=c++17 $(KATI_CXXFLAGS) -o $@ $<
-
 ckati_tests: $(KATI_CXX_TEST_EXES)
 
 # Rule to build tests using *_test.cc and all normal *.cc files except main.cc
-$(KATI_CXX_TEST_EXES): $(filter-out $(KATI_INTERMEDIATES_PATH)/main.o,$(KATI_CXX_OBJS)) $(KATI_CXX_GENERATED_OBJS)
+$(KATI_CXX_TEST_EXES): $(filter-out $(KATI_INTERMEDIATES_PATH)/main.o,$(KATI_CXX_OBJS))
 $(KATI_CXX_TEST_EXES): $(KATI_BIN_PATH)/%: $(KATI_INTERMEDIATES_PATH)/%.o
 	$(KATI_LD) $^ -o $@ $(KATI_LIBS)
-
-# Rule to generate version.cc
-KATI_GIT_DIR := $(shell cd $(KATI_SRC_PATH); realpath `git rev-parse --git-dir`)
-KATI_VERSION_DEPS :=
-ifneq ($(KATI_GIT_DIR),)
-KATI_VERSION_DEPS := $(wildcard $(KATI_GIT_DIR)/HEAD $(KATI_GIT_DIR)/index)
-endif
-ifneq ($(KATI_VERSION_DEPS),)
-KATI_VERSION := $(shell git -C $(KATI_GIT_DIR) rev-parse HEAD)
-else
-KATI_VERSION := unknown
-endif
-$(KATI_INTERMEDIATES_PATH)/version.cc: $(KATI_VERSION_DEPS)
-	@mkdir -p $(dir $@)
-	echo '// +build ignore' > $@
-	echo >> $@
-	echo 'const char* kGitVersion = "$(KATI_VERSION)";' >> $@
 
 tsan_ckati:
 	$(MAKE) clean
