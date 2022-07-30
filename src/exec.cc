@@ -63,6 +63,43 @@ class Executor {
 
     done_[n.output] = kProcessing;
     double output_ts = GetTimestamp(n.output.c_str());
+    if (output_ts == kNotExist) {
+      Var* var_vp = ce_.evaluator()->PeekVar(Intern("VPATH"));
+      if (var_vp->IsDefined()) {
+        auto vs = var_vp->Eval(ce_.evaluator());
+        if (!vs.empty()) {
+          auto colon = vs.find(':');
+          if (colon == vs.npos) {
+            /* just one path to check */
+            if (!vs.empty()) {
+              vs.push_back('/');
+              vs.append(n.output.str());
+              output_ts = GetTimestamp(vs.c_str());
+            }
+          } else {
+            size_t beg = 0;
+            for (;;) {
+              auto sub = vs.substr(beg, size_t(colon - beg));
+              beg = colon + 1;
+              /* empty paths just mean checking the same thing as before */
+              if (!sub.empty()) {
+                sub.push_back('/');
+                sub.append(n->output.str());
+                output_ts = GetTimestamp(sub.c_str());
+                /* found something in vpath */
+                if (output_ts != kNotExist)
+                  break;
+              }
+              if (colon >= (vs.size() - 1))
+                break;
+              colon = vs.find(':', beg);
+              if (colon == vs.npos)
+                colon = vs.size() - 1;
+            }
+          }
+        }
+      }
+    }
 
     LOG("ExecNode: %s for %s", n.output.c_str(),
         needed_by ? needed_by : "(null)");
