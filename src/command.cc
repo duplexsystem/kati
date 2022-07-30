@@ -53,6 +53,13 @@ class AutoVar : public Var {
 
   CommandEvaluator* ce_;
   const char* sym_;
+
+  const DepNode* CurrentDepNode(Evaluator* ev) const {
+    if (ev->current_dep_node != nullptr) {
+      return ev->current_dep_node;
+    }
+    return ce_->current_dep_node();
+  }
 };
 
 #define DECLARE_AUTO_VAR_CLASS(name)                                  \
@@ -93,34 +100,34 @@ class AutoSuffixFVar : public AutoVar {
   Var* wrapped_;
 };
 
-void AutoAtVar::Eval(Evaluator*, string* s) const {
-  *s += ce_->current_dep_node()->output.str();
+void AutoAtVar::Eval(Evaluator* ev, string* s) const {
+  *s += CurrentDepNode(ev)->output.str();
 }
 
-void AutoLessVar::Eval(Evaluator*, string* s) const {
-  auto& ai = ce_->current_dep_node()->actual_inputs;
+void AutoLessVar::Eval(Evaluator* ev, string* s) const {
+  auto& ai = CurrentDepNode(ev)->actual_inputs;
   if (!ai.empty())
     *s += ai[0].str();
 }
 
-void AutoHatVar::Eval(Evaluator*, string* s) const {
+void AutoHatVar::Eval(Evaluator* ev, string* s) const {
   unordered_set<StringPiece> seen;
   WordWriter ww(s);
-  for (Symbol ai : ce_->current_dep_node()->actual_inputs) {
+  for (Symbol ai : CurrentDepNode(ev)->actual_inputs) {
     if (seen.insert(ai.str()).second)
       ww.Write(ai.str());
   }
 }
 
-void AutoPlusVar::Eval(Evaluator*, string* s) const {
+void AutoPlusVar::Eval(Evaluator* ev, string* s) const {
   WordWriter ww(s);
-  for (Symbol ai : ce_->current_dep_node()->actual_inputs) {
+  for (Symbol ai : CurrentDepNode(ev)->actual_inputs) {
     ww.Write(ai.str());
   }
 }
 
-void AutoStarVar::Eval(Evaluator*, string* s) const {
-  const DepNode* n = ce_->current_dep_node();
+void AutoStarVar::Eval(Evaluator* ev, string* s) const {
+  const DepNode* n = CurrentDepNode(ev);
   if (!n->output_pattern.IsValid())
     return;
   Pattern pat(n->output_pattern.str());
@@ -139,23 +146,23 @@ void AutoQuestionVar::Eval(Evaluator* ev, string* s) const {
 
       WordWriter ww(&def);
       ww.Write("KATI_NEW_INPUTS=$(find");
-      for (Symbol ai : ce_->current_dep_node()->actual_inputs) {
+      for (Symbol ai : CurrentDepNode(ev)->actual_inputs) {
         if (seen.insert(ai.str()).second) {
           ww.Write(ai.str());
         }
       }
       ww.Write("$(test -e");
-      ww.Write(ce_->current_dep_node()->output.str());
+      ww.Write(CurrentDepNode(ev)->output.str());
       ww.Write("&& echo -newer");
-      ww.Write(ce_->current_dep_node()->output.str());
+      ww.Write(CurrentDepNode(ev)->output.str());
       ww.Write(")) && export KATI_NEW_INPUTS");
       ev->add_delayed_output_command(def);
       ce_->set_found_new_inputs(true);
     }
   } else {
     WordWriter ww(s);
-    double target_age = GetTimestamp(ce_->current_dep_node()->output.str());
-    for (Symbol ai : ce_->current_dep_node()->actual_inputs) {
+    double target_age = GetTimestamp(CurrentDepNode(ev)->output.str());
+    for (Symbol ai : CurrentDepNode(ev)->actual_inputs) {
       if (seen.insert(ai.str()).second && GetTimestamp(ai.str()) > target_age) {
         ww.Write(ai.str());
       }
