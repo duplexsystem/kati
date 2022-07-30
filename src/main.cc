@@ -361,8 +361,7 @@ int main(int argc, char* argv[]) {
   }
   FindFirstMakefie();
   if (g_flags.makefile == NULL)
-    g_flags.makefile = "";
-    //ERROR("*** No targets specified and no makefile found.");
+    ERROR("*** No targets specified and no makefile found.");
   // This depends on command line flags.
   if (g_flags.use_find_emulator)
     InitFindEmulator();

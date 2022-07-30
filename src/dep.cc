@@ -410,7 +410,7 @@ class DepBuilder {
 
   void Build(vector<Symbol> targets, vector<NamedDepNode>* nodes) {
     if (!first_rule_.IsValid()) {
-      //ERROR("*** No targets.");
+      ERROR("*** No targets.");
     }
 
     if (!g_flags.gen_all_targets && targets.empty()) {
