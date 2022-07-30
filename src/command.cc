@@ -74,6 +74,7 @@ DECLARE_AUTO_VAR_CLASS(AutoAtVar);
 DECLARE_AUTO_VAR_CLASS(AutoLessVar);
 DECLARE_AUTO_VAR_CLASS(AutoHatVar);
 DECLARE_AUTO_VAR_CLASS(AutoPlusVar);
+DECLARE_AUTO_VAR_CLASS(AutoPipeVar);
 DECLARE_AUTO_VAR_CLASS(AutoStarVar);
 DECLARE_AUTO_VAR_CLASS(AutoQuestionVar);
 DECLARE_AUTO_VAR_CLASS(AutoNotImplementedVar);
@@ -122,6 +123,13 @@ void AutoHatVar::Eval(Evaluator* ev, string* s) const {
 void AutoPlusVar::Eval(Evaluator* ev, string* s) const {
   WordWriter ww(s);
   for (Symbol ai : CurrentDepNode(ev)->actual_inputs) {
+    ww.Write(ai.str());
+  }
+}
+
+void AutoPipeVar::Eval(Evaluator*, string* s) const {
+  WordWriter ww(s);
+  for (Symbol ai : ce_->current_dep_node()->actual_order_only_inputs) {
     ww.Write(ai.str());
   }
 }
@@ -223,11 +231,11 @@ CommandEvaluator::CommandEvaluator(Evaluator* ev) : ev_(ev) {
   INSERT_AUTO_VAR(AutoLessVar, "<");
   INSERT_AUTO_VAR(AutoHatVar, "^");
   INSERT_AUTO_VAR(AutoPlusVar, "+");
+  INSERT_AUTO_VAR(AutoPipeVar, "|");
   INSERT_AUTO_VAR(AutoStarVar, "*");
   INSERT_AUTO_VAR(AutoQuestionVar, "?");
   // TODO: Implement them.
   INSERT_AUTO_VAR(AutoNotImplementedVar, "%");
-  INSERT_AUTO_VAR(AutoNotImplementedVar, "|");
 }
 
 std::vector<Command> CommandEvaluator::Eval(const DepNode& n) {
