@@ -127,9 +127,9 @@ void AutoPlusVar::Eval(Evaluator* ev, string* s) const {
   }
 }
 
-void AutoPipeVar::Eval(Evaluator*, string* s) const {
+void AutoPipeVar::Eval(Evaluator* ev, string* s) const {
   WordWriter ww(s);
-  for (Symbol ai : ce_->current_dep_node()->actual_order_only_inputs) {
+  for (Symbol ai : CurrentDepNode(ev)->actual_order_only_inputs) {
     ww.Write(ai.str());
   }
 }
