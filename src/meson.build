@@ -19,9 +19,7 @@ kati_src = [
     'func.cc',
     'io.cc',
     'log.cc',
-    'ninja.cc',
     'parser.cc',
-    'regen.cc',
     'rule.cc',
     'stats.cc',
     'stmt.cc',
@@ -36,7 +34,6 @@ kati_src = [
 
 kati_test = [
     'find_test',
-    'ninja_test',
     'string_piece_test',
     'strutil_test',
     'strutil_bench',
