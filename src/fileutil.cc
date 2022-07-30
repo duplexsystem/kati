@@ -159,7 +159,7 @@ int RunCommand(const string& shell,
     if (result < 0)
       PERROR("waitpid failed");
 
-    while (true) {
+    if (s) while (true) {
       char buf[4096];
       ssize_t r = HANDLE_EINTR(read(pipefd[0], buf, 4096));
       if (r < 0)
