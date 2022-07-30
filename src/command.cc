@@ -75,6 +75,7 @@ DECLARE_AUTO_VAR_CLASS(AutoLessVar);
 DECLARE_AUTO_VAR_CLASS(AutoHatVar);
 DECLARE_AUTO_VAR_CLASS(AutoPlusVar);
 DECLARE_AUTO_VAR_CLASS(AutoPipeVar);
+DECLARE_AUTO_VAR_CLASS(AutoQmarkVar);
 DECLARE_AUTO_VAR_CLASS(AutoStarVar);
 DECLARE_AUTO_VAR_CLASS(AutoQuestionVar);
 DECLARE_AUTO_VAR_CLASS(AutoNotImplementedVar);
@@ -131,6 +132,20 @@ void AutoPipeVar::Eval(Evaluator* ev, string* s) const {
   WordWriter ww(s);
   for (Symbol ai : CurrentDepNode(ev)->actual_order_only_inputs) {
     ww.Write(ai.str());
+  }
+}
+
+void AutoQmarkVar::Eval(Evaluator* ev, string* s) const {
+  unordered_set<StringPiece> seen;
+  WordWriter ww(s);
+  auto *cnode = CurrentDepNode(ev);
+  auto tgt_ts = cnode->GetTimestamp(ce_->evaluator(), cnode->output);
+  for (Symbol ai : CurrentDepNode(ev)->actual_inputs) {
+    if (!seen.insert(ai.str()).second)
+      continue;
+    auto inp_ts = cnode->GetTimestamp(ce_->evaluator(), ai);
+    if (inp_ts > tgt_ts)
+      ww.Write(ai.str());
   }
 }
 
@@ -232,6 +247,7 @@ CommandEvaluator::CommandEvaluator(Evaluator* ev) : ev_(ev) {
   INSERT_AUTO_VAR(AutoHatVar, "^");
   INSERT_AUTO_VAR(AutoPlusVar, "+");
   INSERT_AUTO_VAR(AutoPipeVar, "|");
+  INSERT_AUTO_VAR(AutoQmarkVar, "?");
   INSERT_AUTO_VAR(AutoStarVar, "*");
   INSERT_AUTO_VAR(AutoQuestionVar, "?");
   // TODO: Implement them.
