@@ -14,7 +14,6 @@
 
 all: ckati ckati_tests
 
-include Makefile.kati
 include Makefile.ckati
 
 info: ckati
@@ -33,7 +32,6 @@ version:
 	@echo $(MAKE_VERSION)
 
 test: all ckati_tests
-	go test --ckati --ninja
 
 clean: ckati_clean
 
