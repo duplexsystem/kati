@@ -36,6 +36,8 @@ struct DepNode {
   DepNode(Symbol output, bool is_phony, bool is_restat);
   string DebugString();
 
+  double GetTimestamp(Evaluator *ev, Symbol inp) const;
+
   Symbol output;
   vector<Value*> cmds;
   vector<NamedDepNode> deps;

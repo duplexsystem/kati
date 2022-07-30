@@ -294,6 +294,55 @@ DepNode::DepNode(Symbol o, bool p, bool r)
       depfile_var(NULL),
       ninja_pool_var(NULL) {}
 
+const double kNotExist = -2.0;
+
+double DepNode::GetTimestamp(Evaluator *ev, Symbol inp) const {
+  double output_ts = ::GetTimestamp(inp.c_str());
+
+  if (output_ts != kNotExist)
+    return output_ts;
+
+  Var* var_vp = ev->PeekVar(Intern("VPATH"));
+  if (!var_vp->IsDefined())
+    return output_ts;
+
+  auto vs = var_vp->Eval(ev);
+  if (vs.empty())
+    return output_ts;
+
+  auto colon = vs.find(':');
+  if (colon == vs.npos) {
+    /* just one path to check */
+    if (!vs.empty()) {
+      vs.push_back('/');
+      vs.append(inp.str());
+      return ::GetTimestamp(vs.c_str());
+    }
+  } else {
+    size_t beg = 0;
+    for (;;) {
+      auto sub = vs.substr(beg, size_t(colon - beg));
+      beg = colon + 1;
+      /* empty paths just mean checking the same thing as before */
+      if (!sub.empty()) {
+        sub.push_back('/');
+        sub.append(inp.str());
+        output_ts = ::GetTimestamp(sub.c_str());
+        /* found something in vpath */
+        if (output_ts != kNotExist)
+          return output_ts;
+      }
+      if (colon >= (vs.size() - 1))
+        break;
+      colon = vs.find(':', beg);
+      if (colon == vs.npos)
+        colon = vs.size() - 1;
+    }
+  }
+
+  return output_ts;
+}
+
 class DepBuilder {
  public:
   DepBuilder(Evaluator* ev,
