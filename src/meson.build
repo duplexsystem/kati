@@ -1,3 +1,9 @@
+kati_cppdefs = []
+
+if not get_option('nolog')
+    kati_cppdefs += '-DNOLOG'
+endif
+
 kati_src = [
     'affinity.cc',
     'command.cc',
@@ -36,7 +42,12 @@ kati_test = [
     'strutil_bench',
 ]
 
-kati_lib = static_library('kati', kati_src, install: false, pic: true)
+kati_lib = static_library('kati',
+    kati_src,
+    cpp_args: kati_cppdefs,
+    install: false,
+    pic: true
+)
 
 kati_exe = executable('kati', ['main.cc'],
     link_with: [kati_lib],

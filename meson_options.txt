@@ -1,0 +1,5 @@
+option('nolog',
+    type: 'boolean',
+    value: 'true',
+    description: 'Whether to disable logging'
+)
